@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 const EXPERIENCES_PATH = path.join(__dirname, "data", "mock_experiences.json");
 const ITINERARIES_PATH = path.join(__dirname, "data", "mock_itineraries.json");
