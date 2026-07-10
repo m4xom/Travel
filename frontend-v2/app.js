@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://boutique-travel-sahana-bkczdzdtdefnfxd0.centralus-01.azurewebsites.net/api";
 
 // ---------------------------------------------------------------------------
 // Duration slider label
