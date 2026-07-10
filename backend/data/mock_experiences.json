@@ -1,0 +1,66 @@
+[
+  {
+    "id": "exp-kyo-001",
+    "title": "Dawn Bamboo Grove Walk & Tea Ceremony",
+    "location": "Kyoto, Japan",
+    "tags": ["relaxed", "historical"],
+    "cost": 68,
+    "host": "Haruto Tanaka"
+  },
+  {
+    "id": "exp-kyo-002",
+    "title": "Nishiki Market Street Food Crawl",
+    "location": "Kyoto, Japan",
+    "tags": ["foodie", "adventurous"],
+    "cost": 45,
+    "host": "Emi Sato"
+  },
+  {
+    "id": "exp-kyo-003",
+    "title": "Samurai Sword Forging Workshop",
+    "location": "Kyoto, Japan",
+    "tags": ["historical", "adventurous"],
+    "cost": 95,
+    "host": "Kenji Watanabe"
+  },
+  {
+    "id": "exp-kyo-004",
+    "title": "Fushimi Inari Torii Gate Sunrise Hike",
+    "location": "Kyoto, Japan",
+    "tags": ["adventurous", "historical"],
+    "cost": 30,
+    "host": "Aiko Fujimoto"
+  },
+  {
+    "id": "exp-kyo-005",
+    "title": "Kaiseki Multi-Course Cooking Class",
+    "location": "Kyoto, Japan",
+    "tags": ["foodie", "relaxed"],
+    "cost": 110,
+    "host": "Emi Sato"
+  },
+  {
+    "id": "exp-kyo-006",
+    "title": "Gion District Geiko & Maiko Twilight Walk",
+    "location": "Kyoto, Japan",
+    "tags": ["historical", "relaxed"],
+    "cost": 55,
+    "host": "Yumi Kobayashi"
+  },
+  {
+    "id": "exp-kyo-007",
+    "title": "Kifune River Kawadoko Dining Experience",
+    "location": "Kyoto, Japan",
+    "tags": ["foodie", "relaxed"],
+    "cost": 85,
+    "host": "Kenji Watanabe"
+  },
+  {
+    "id": "exp-kyo-008",
+    "title": "Whitewater Rafting the Hozugawa Rapids",
+    "location": "Kyoto, Japan",
+    "tags": ["adventurous", "relaxed"],
+    "cost": 72,
+    "host": "Aiko Fujimoto"
+  }
+]
