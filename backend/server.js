@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
 const EXPERIENCES_PATH = path.join(__dirname, "data", "mock_experiences.json");
 const ITINERARIES_PATH = path.join(__dirname, "data", "mock_itineraries.json");
@@ -190,12 +190,18 @@ app.post("/api/generate-itinerary", (req, res) => {
 
   const days = buildDayByDayPlan(rankedExperiences, durationNum);
 
+  const totalCost = days.reduce(
+    (sum, day) => sum + day.activities.reduce((daySum, activity) => daySum + activity.cost, 0),
+    0
+  );
+
   const itinerary = {
     itineraryId: generateItineraryId(),
     destination: destination.trim(),
     duration: durationNum,
     preferences: preferenceList,
     days,
+    totalCost,
     createdAt: new Date().toISOString(),
   };
 

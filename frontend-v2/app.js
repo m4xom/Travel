@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://boutique-travel-sahana-bkczdzdtdefnfxd0.centralus-01.azurewebsites.net/api";
+const API_BASE_URL = "http://localhost:5000/api";
 
 // ---------------------------------------------------------------------------
 // Duration slider label
@@ -86,10 +86,20 @@ function renderItinerary(itinerary) {
     ${itinerary.preferences.map((p) => `<span class="px-4 py-1 bg-primary text-white text-xs uppercase tracking-widest">${p}</span>`).join("")}
   `;
 
-  itineraryDays.innerHTML = itinerary.days.map(renderDayCard).join("");
+  itineraryDays.innerHTML =
+    itinerary.days.map(renderDayCard).join("") + renderTotalCard(itinerary.totalCost);
 
   itineraryPlaceholder.style.display = "none";
   itineraryPane.style.display = "block";
+}
+
+function renderTotalCard(totalCost) {
+  return `
+    <div class="bg-primary text-white p-8 flex justify-between items-center">
+      <h5 class="font-headline-lg text-xl uppercase tracking-widest">Trip Total</h5>
+      <div class="font-headline-lg text-2xl">$${totalCost}</div>
+    </div>
+  `;
 }
 
 function renderDayCard(day) {
