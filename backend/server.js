@@ -2,12 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const { ensureTableExists, readItineraries, persistItinerary } = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const EXPERIENCES_PATH = path.join(__dirname, "data", "mock_experiences.json");
-const ITINERARIES_PATH = path.join(__dirname, "data", "mock_itineraries.json");
 
 const MIN_DURATION = 1;
 const MAX_DURATION = 7;
@@ -17,23 +17,12 @@ app.use(cors());
 app.use(express.json());
 
 // ---------------------------------------------------------------------------
-// Persistence helpers (simulate Azure SQL / Cosmos DB reads & writes locally)
+// Persistence helpers
 // ---------------------------------------------------------------------------
 
 function readExperiences() {
   const raw = fs.readFileSync(EXPERIENCES_PATH, "utf-8");
   return JSON.parse(raw);
-}
-
-function readItineraries() {
-  const raw = fs.readFileSync(ITINERARIES_PATH, "utf-8");
-  return JSON.parse(raw);
-}
-
-function persistItinerary(itinerary) {
-  const itineraries = readItineraries();
-  itineraries.push(itinerary);
-  fs.writeFileSync(ITINERARIES_PATH, JSON.stringify(itineraries, null, 2), "utf-8");
 }
 
 function generateItineraryId() {
@@ -158,7 +147,7 @@ app.get("/api/hosts", (req, res) => {
   }
 });
 
-app.post("/api/generate-itinerary", (req, res) => {
+app.post("/api/generate-itinerary", async (req, res) => {
   const { destination, duration, preferences } = req.body || {};
 
   if (!destination || typeof destination !== "string" || !destination.trim()) {
@@ -206,7 +195,7 @@ app.post("/api/generate-itinerary", (req, res) => {
   };
 
   try {
-    persistItinerary(itinerary);
+    await persistItinerary(itinerary);
   } catch (err) {
     console.error("Failed to persist itinerary:", err);
     return res.status(500).json({ error: "Itinerary was generated but could not be saved." });
@@ -219,6 +208,12 @@ app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.path} not found.` });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Boutique Travel Portal backend running at http://localhost:${PORT}`);
+  try {
+    await ensureTableExists();
+    console.log("Connected to Azure SQL and confirmed Itineraries table exists.");
+  } catch (err) {
+    console.error("Could not connect to Azure SQL:", err.message);
+  }
 });
