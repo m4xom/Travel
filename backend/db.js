@@ -35,9 +35,74 @@ async function ensureTableExists() {
       preferences NVARCHAR(MAX),
       days NVARCHAR(MAX),
       totalCost INT,
+      createdAt DATETIME2,
+      userId NVARCHAR(50)
+    )
+  `);
+
+  await pool.request().query(`
+    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
+    CREATE TABLE Users (
+      userId NVARCHAR(50) PRIMARY KEY,
+      name NVARCHAR(200) NOT NULL,
+      email NVARCHAR(200) NOT NULL UNIQUE,
+      travelPreferences NVARCHAR(MAX),
       createdAt DATETIME2
     )
   `);
+}
+
+// ---------------------------------------------------------------------------
+// User profile helpers
+// ---------------------------------------------------------------------------
+
+async function createUser(user) {
+  const pool = await getPool();
+  await pool
+    .request()
+    .input("userId", sql.NVarChar, user.userId)
+    .input("name", sql.NVarChar, user.name)
+    .input("email", sql.NVarChar, user.email)
+    .input("travelPreferences", sql.NVarChar(sql.MAX), JSON.stringify(user.travelPreferences || []))
+    .input("createdAt", sql.DateTime2, new Date(user.createdAt))
+    .query(`
+      INSERT INTO Users (userId, name, email, travelPreferences, createdAt)
+      VALUES (@userId, @name, @email, @travelPreferences, @createdAt)
+    `);
+}
+
+async function getUserByEmail(email) {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("email", sql.NVarChar, email)
+    .query("SELECT * FROM Users WHERE email = @email");
+  if (result.recordset.length === 0) return null;
+  const row = result.recordset[0];
+  return {
+    userId: row.userId,
+    name: row.name,
+    email: row.email,
+    travelPreferences: JSON.parse(row.travelPreferences || "[]"),
+    createdAt: row.createdAt,
+  };
+}
+
+async function getUserById(userId) {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("userId", sql.NVarChar, userId)
+    .query("SELECT * FROM Users WHERE userId = @userId");
+  if (result.recordset.length === 0) return null;
+  const row = result.recordset[0];
+  return {
+    userId: row.userId,
+    name: row.name,
+    email: row.email,
+    travelPreferences: JSON.parse(row.travelPreferences || "[]"),
+    createdAt: row.createdAt,
+  };
 }
 
 async function readItineraries() {
@@ -65,10 +130,19 @@ async function persistItinerary(itinerary) {
     .input("days", sql.NVarChar(sql.MAX), JSON.stringify(itinerary.days))
     .input("totalCost", sql.Int, itinerary.totalCost)
     .input("createdAt", sql.DateTime2, new Date(itinerary.createdAt))
+    .input("userId", sql.NVarChar, itinerary.userId || null)
     .query(`
-      INSERT INTO Itineraries (itineraryId, destination, duration, preferences, days, totalCost, createdAt)
-      VALUES (@itineraryId, @destination, @duration, @preferences, @days, @totalCost, @createdAt)
+      INSERT INTO Itineraries (itineraryId, destination, duration, preferences, days, totalCost, createdAt, userId)
+      VALUES (@itineraryId, @destination, @duration, @preferences, @days, @totalCost, @createdAt, @userId)
     `);
 }
 
-module.exports = { getPool, ensureTableExists, readItineraries, persistItinerary };
+module.exports = {
+  getPool,
+  ensureTableExists,
+  readItineraries,
+  persistItinerary,
+  createUser,
+  getUserByEmail,
+  getUserById,
+};

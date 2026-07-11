@@ -2,7 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
-const { ensureTableExists, readItineraries, persistItinerary } = require("./db");
+const {
+  ensureTableExists,
+  readItineraries,
+  persistItinerary,
+  createUser,
+  getUserByEmail,
+  getUserById,
+} = require("./db");
+const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -147,8 +155,57 @@ app.get("/api/hosts", (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// User profiles (Azure SQL)
+// ---------------------------------------------------------------------------
+
+app.post("/api/users", async (req, res) => {
+  const { name, email, travelPreferences } = req.body || {};
+
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return res.status(400).json({ error: "A valid 'name' string is required." });
+  }
+  if (!email || typeof email !== "string" || !email.includes("@")) {
+    return res.status(400).json({ error: "A valid 'email' string is required." });
+  }
+
+  try {
+    const existing = await getUserByEmail(email.trim().toLowerCase());
+    if (existing) {
+      return res.status(409).json({ error: "A user with this email already exists.", user: existing });
+    }
+
+    const user = {
+      userId: `user-${crypto.randomUUID()}`,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      travelPreferences: Array.isArray(travelPreferences) ? travelPreferences : [],
+      createdAt: new Date().toISOString(),
+    };
+
+    await createUser(user);
+    res.status(201).json(user);
+  } catch (err) {
+    console.error("Failed to create user:", err);
+    res.status(500).json({ error: "Could not create user profile." });
+  }
+});
+
+app.get("/api/users/:userId", async (req, res) => {
+  try {
+    const user = await getUserById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error("Failed to fetch user:", err);
+    res.status(500).json({ error: "Could not load user profile." });
+  }
+});
+
 app.post("/api/generate-itinerary", async (req, res) => {
-  const { destination, duration, preferences } = req.body || {};
+  const { destination, duration, preferences, userId } = req.body || {};
 
   if (!destination || typeof destination !== "string" || !destination.trim()) {
     return res.status(400).json({ error: "A valid 'destination' string is required." });
@@ -192,6 +249,7 @@ app.post("/api/generate-itinerary", async (req, res) => {
     days,
     totalCost,
     createdAt: new Date().toISOString(),
+    userId: typeof userId === "string" ? userId : null,
   };
 
   try {
